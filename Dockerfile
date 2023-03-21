@@ -1,10 +1,10 @@
-FROM openjdk:8
-MAINTAINER Ivan Ermilov <ivan.s.ermilov@gmail.com>
+FROM openjdk:8 as hbase_base
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends net-tools curl netcat
 
 ENV HBASE_VERSION 1.2.6
-ENV HBASE_URL http://www.apache.org/dist/hbase/$HBASE_VERSION/hbase-$HBASE_VERSION-bin.tar.gz
+ENV HBASE_URL http://archive.apache.org/dist/hbase/$HBASE_VERSION/hbase-$HBASE_VERSION-bin.tar.gz
+
 RUN set -x \
     && curl -fSL "$HBASE_URL" -o /tmp/hbase.tar.gz \
     && curl -fSL "$HBASE_URL.asc" -o /tmp/hbase.tar.gz.asc \
@@ -26,3 +26,11 @@ ADD entrypoint.sh /entrypoint.sh
 RUN chmod a+x /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
+
+
+FROM hbase_base as hbase_master
+
+COPY run.sh /run.sh
+RUN chmod +x /run.sh
+
+CMD ["/run.sh"]
